@@ -112,7 +112,7 @@ What to (not) optimize?
 * Optimize only slow parts of code.
 * Don't bother with parts of code running fast.
 * Optimize only if you don't find faster algorithm O(n^3) > O(n^2)
-* First look into **numpy**.
+* First look into **numpy**
 * Recursive algorithms
 * ... but not the ones that can be calculated using matrices::
 
@@ -121,4 +121,152 @@ What to (not) optimize?
     >>> x = np.linalg.solve(a, b)
     >>> x
     array([ 2.,  3.])
+
+Relevant syntax in 4 lines
+--------------------------
+
+* Cython imports for native modules
+
+  .. code-block:: cython
+
+    cimport numpy as np
+
+* Native type defintions
+
+  .. code-block:: cython
+
+    cdef Fd_t* fd_buffer= <Fd_t*>malloc(150000000*sizeof(Fd_t))
+
+* Structure/Class declarations
+
+  .. code-block:: cython
+
+    cdef struct Fd_t:
+        np.uint16_t cost
+        np.uint16_t source
+
+    cdef class Fd:
+        cdef public np.uint16_t cost
+        cdef public np.uint16_t source
+
+* Native function decalarations
+
+  .. code-block:: cython
+
+    cdef inline Fd_t* fd_factory(Fd_t *instance, np.uint_t cost)
+
+.. image:: _static/speed10.jpg
+    :align: right
+    :class: full-screen
+
+Before you do it, prepare your data!
+------------------------------------
+
+First prepare your data to be ready for fast processing. Any non-optimized dynamic
+datai will slow down your code rapidly.
+
+* ... store it into numpy arrays 
+  
+  .. code-block:: cython
+
+    cdef np.ndarray[np.uint_t,ndim=2] Ak = np.array(Ak_t, dtype=np.uint)
+
+* ... or in C structures inside numpy arrays
+
+  .. code-block:: cython
+
+    Node_dt= np.dtype({'names':('hash','id'), 'formats':(np.int,np.uint)})
+    cdef struct Node:
+        np.int_t hash
+        np.uint_t id
+
+    ...
+
+    cdef np.ndarray[Node, ndim=1] An = np.array(An_t1, dtype=Node_dt)
+
+.. image:: _static/speed9.jpg
+    :align: right
+    :class: full-screen
+
+How to optimize?
+----------------
+
+* Don't use classes, they are slow, use numpy arrays
+
+  .. code-block:: cython
+
+    cdef np.ndarray[np.uint_t,ndim=2] Ak = np.array(Ak_t, dtype=np.uint)
+
+* Turn off garbage collector if not needed
+  
+  .. code-block:: cython
+    
+    gc.disable()
+
+* Use basic for loops like this one
+
+  .. code-block:: cython
+  
+    for x from 1 <= x < m:
+
+* Set compiler directives like disabing array bounds checks and wrapp around
+  array support.
+
+  .. code-block:: cython
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef test()
+
+.. image:: _static/speed8.jpg
+    :align: right
+    :class: full-screen
+
+How to optimize even better?
+----------------------------
+
+* Instead of dynamic strucutres preallocate memory if you've got enough
+
+  .. code-block:: cython
+
+    cdef Fd_t* fd_buffer= <Fd_t*>malloc(150000000*sizeof(Fd_t))
+
+* Index your arrays using comma and **numpy** will optimize
+  
+  .. code-block:: cython
+
+      treedists[x+ioff, y+joff] = fd[x, y]
+
+* Use inline functions
+
+  .. code-block:: cython
+
+    cdef inline Fd_t* fd_factory( ... )
+
+* If you are using classes, use factory to construct them
+
+  .. code-block:: cython
+
+   cdef inline Fd_t* fd_factory(Fd_t *instance, np.uint_t cost, np.uint_t source):
+       instance.cost = cost
+       instance.source = source
+
+       return instance
+
+.. image:: _static/speed11.jpg
+    :align: right
+    :class: full-screen
+
+
+If felix can do it, you can do it!
+==================================
+
+* Example
+* Q&A
+
+Thanks!
+
+.. image:: _static/speed7.jpg
+    :align: right
+    :class: full-screen
 

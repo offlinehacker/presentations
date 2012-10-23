@@ -2,6 +2,11 @@ h2 {
   margin-top: -20px;
 }
 
+pre {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 img.full-screen {
   position: absolute;
   margin: 0px 0px 0px 0px;
