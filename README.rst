@@ -1,7 +1,7 @@
 Presentations
 =============
 
-Bunch of presentations created in `hieroglyph` sphinx extension.
+Bunch of presentations created in **hieroglyph** sphinx extension.
 
 Build instructions
 ------------------
